@@ -1,19 +1,21 @@
 """
 Agent-based wealth-exchange models with identical initial endowments.
 
-Models implemented:
-  1. Dragulescu-Yakovenko (DY): random pairwise transfers with fixed stake.
-  2. Chakraborti saving-propensity: agents retain a fraction lambda of wealth.
-  3. Yard-sale (Ispolatov-Krapivsky-Redner): proportional loss for the loser.
-  4. Matthew-effect exchange: transfers biased toward the wealthier agent.
+Core (no bias toward the already-wealthy):
+  1. Dragulescu-Yakovenko (DY): fair random pairwise transfers.
+  2. Chakraborti saving-propensity: agents retain a fraction lambda before trading.
+  3. Yard-sale (Ispolatov-Krapivsky-Redner): fair coin, min-stake transfers.
 
-All models conserve total wealth (closed economy). Inequality emerges endogenously
-from stochastic interaction even when w_i(0) is identical for all i.
+Extension (Matthew effect / cumulative advantage):
+  4. Biased exchange: transfers flow toward the richer agent with p > 1/2.
+
+All models conserve total wealth. The headline result is that Models 1-3 produce
+inequality from identical starts without rich-agent bias; Model 4 amplifies it.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Callable
 
 import numpy as np
@@ -303,3 +305,42 @@ def make_exchange_fn(model: str, config: SimulationConfig) -> Callable:
         return fn
 
     raise ValueError(f"Unknown model: {model}")
+
+
+UNBIASED_MODELS = ("dy", "chakraborti", "yard_sale")
+
+
+def run_ensemble(
+    model: str,
+    config: SimulationConfig,
+    n_runs: int = 1000,
+) -> dict:
+    """
+    Run many independent simulations with distinct seeds.
+
+    Each run starts from identical endowments (Gini = 0). Returns the distribution
+    of terminal Gini coefficients across runs.
+    """
+    terminal_ginis: list[float] = []
+    terminal_top1: list[float] = []
+
+    for run in range(n_runs):
+        cfg = replace(config, seed=config.seed + run)
+        result = simulate(make_exchange_fn(model, cfg), cfg)
+        w = result["final_wealth"]
+        terminal_ginis.append(gini_coefficient(w))
+        terminal_top1.append(top_share(w, 0.01))
+
+    ginis = np.array(terminal_ginis)
+    return {
+        "model": model,
+        "n_runs": n_runs,
+        "ginis": ginis,
+        "top_1pct": np.array(terminal_top1),
+        "mean_gini": float(ginis.mean()),
+        "median_gini": float(np.median(ginis)),
+        "min_gini": float(ginis.min()),
+        "max_gini": float(ginis.max()),
+        "frac_gini_positive": float((ginis > 0).mean()),
+        "config": config,
+    }

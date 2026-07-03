@@ -28,12 +28,11 @@
 
 \title{%
   \textbf{Emergent Inequality from Equal Starts:}\\[0.4em]
-  Agent-Based Wealth Exchange and the Matthew Effect
+  Unbiased Wealth Exchange and the Matthew Effect
 }
 
 \author{%
-  \textit{Working Paper}\\[0.5em]
-  Agent-Based Computational Economics
+  Scott Brodie Forsyth
 }
 
 \date{\today}
@@ -55,15 +54,16 @@
 
 \begin{abstract}
   \noindent
-  How does substantial inequality arise when economic agents begin with identical endowments and face no inherent differences in ability or preference?
-  This paper develops an agent-based computational model of stochastic wealth exchange in a closed economy and shows that inequality is an \emph{emergent} property of interaction dynamics, not a prerequisite of the initial state.
-  We formalize four canonical exchange rules from the econophysics and agent-based literatures: random fixed transfers \citep{dragulescu2000}, saving-propensity exchange \citep{chakraborti2000}, proportional yard-sale losses \citep{ispolatov1998}, and a minimal Matthew-effect specification in which wealth flows preferentially toward the richer party in each encounter \citep{merton1968, price1976}.
-  Despite conservation of aggregate wealth and symmetric initial conditions, all specifications generate dispersion; some produce extreme \emph{wealth condensation} in which a vanishing fraction of agents holds a positive fraction of total resources \citep{bouchaud2000, yakovenko2009}.
-  We report simulation evidence on the Gini coefficient, Lorenz curves, and top wealth shares, and interpret the results for readers without specialist training while preserving formal definitions.
-  The exercise clarifies when ``the rich get richer'' follows from cumulative advantage embedded in mundane market-like encounters, and when it requires additional structural features such as heterogeneous returns or political institutions \citep{piketty2014, acemoglu2015}.
+  Does inequality require that agents differ in talent, effort, or institutional advantage from the outset?
+  This paper argues that it does not.
+  In agent-based models of wealth exchange with identical initial endowments and \emph{unbiased} interaction rules---fair coin flips, no preferential flow toward the already-rich---inequality emerges as a generic outcome of stochastic dynamics \citep{dragulescu2000, yakovenko2009}.
+  We formalize three such specifications (random fixed transfers, saving-propensity exchange, and yard-sale min-stake losses) and demonstrate the core claim with a Monte Carlo ensemble of $1{,}000$ independent unbiased runs, each beginning at Gini zero and ending with strictly positive dispersion.
+  Only after establishing this baseline do we introduce a fourth, \emph{extension} model that operationalizes Merton's Matthew effect: wealth flows toward the richer party with probability $p > \tfrac{1}{2}$ \citep{merton1968, price1976}.
+  That bias accelerates concentration but is not necessary for inequality to appear.
+  We report Gini coefficients, Lorenz curves, and top wealth shares, with exposition aimed at both specialists and non-specialists.
 \end{abstract}
 
-\noindent\textbf{Keywords:} agent-based model; wealth distribution; Matthew effect; cumulative advantage; econophysics; emergent inequality; Gini coefficient
+\noindent\textbf{Keywords:} agent-based model; emergent inequality; wealth distribution; unbiased exchange; Matthew effect; cumulative advantage; econophysics
 
 \noindent\textbf{JEL codes:} C63, D31, E17, C15
 
@@ -74,28 +74,28 @@
 \label{sec:intro}
 % ===========================================================================
 
-A familiar puzzle runs through popular and academic discussions of inequality alike: if people start on roughly equal footing, why do outcomes diverge so sharply?
-The Gospel of Matthew offers a stark formulation of cumulative advantage---resources accrue to those who already hold them---and the sociologist Robert K. Merton imported the phrase \emph{Matthew effect} into science studies to describe how small early advantages in recognition compound into large disparities in credit and resources \citep{merton1968}.
-The underlying mechanism, \emph{cumulative advantage} or \emph{preferential attachment}, appears independently in bibliometrics \citep{price1976}, network science, and models of asset exchange \citep{ispolatov1998, bouchaud2000}.
+A familiar puzzle runs through discussions of inequality: if people start on equal footing, why do outcomes diverge?
+One might answer that the rich are favored by institutions, networks, or compounding returns.
+That answer points to \emph{cumulative advantage}.
+The Gospel of Matthew and Robert K. Merton's \emph{Matthew effect} in science name this force explicitly: resources accrue to those who already hold them \citep{merton1968, matthew2529}.
 
-This paper asks a disciplined version of the puzzle.
-Suppose $N$ agents each begin with the same wealth $w_0 > 0$.
-They meet in pairs at random and transfer resources according to a simple rule that treats agents symmetrically \emph{ex ante} (no agent is labeled ``talented'' or ``high productivity'' in the code).
-Aggregate wealth is conserved: what one agent loses, another gains.
-Can inequality still emerge?
+But cumulative advantage is not the only route to dispersion.
+A more basic question comes first: can inequality arise when \emph{nobody} is favored---when every agent starts with the same wealth and every encounter is governed by a symmetric, unbiased rule?
+The answer, in the kinetic exchange models studied here, is yes.
+Inequality is \emph{emergent}: it is not assumed at $t=0$ but generated by the history of random meetings \citep{dragulescu2000, schelling1971, epstein2006, farmer2013}.
 
-The answer, in the models studied here, is yes.
-Inequality in these simulations is not assumed at $t=0$; it \emph{emerges} from the stochastic dynamics of exchange.
-That distinction matters methodologically.
-A high Gini coefficient in cross-sectional data does not by itself reveal whether inequality reflects initial heterogeneity, institutional rules, or the amplification of luck through interaction \citep{benhabib2011, galor2000}.
-Agent-based models (ABMs) make the mechanism visible: one can watch an economy depart from perfect equality even when every agent starts identical \citep{schelling1971, epstein2006, farmer2013}.
+This paper is organized around that ordering.
+\textbf{Act I (core).} Models 1--3 use no bias toward the wealthier agent.
+Agents meet in pairs; winners and losers are chosen by fair coin flips or by rules that do not tilt toward the rich.
+Aggregate wealth is conserved.
+Nevertheless, the distribution departs from perfect equality.
+We stress-test the claim with $1{,}000$ independent simulations of the minimal unbiased model (Figure~\ref{fig:ensemble}).
 
-We proceed in four steps.
-Section~\ref{sec:concepts} defines key terms for a mixed audience of specialists and non-specialists.
-Section~\ref{sec:model} presents the mathematical framework.
-Section~\ref{sec:simulation} describes the computational experiment and figures.
-Section~\ref{sec:discussion} connects results to economics and cautions against over-interpretation.
-Section~\ref{sec:conclusion} concludes.
+\textbf{Act II (extension).} Model 4 adds a small bias $p > \tfrac{1}{2}$ favoring the richer party in each encounter.
+This is the Matthew effect as \emph{amplification}: it speeds concentration but is not the existence proof for inequality itself.
+
+The epigraph from Matthew therefore frames the second act, not the first.
+The primary scientific contribution is that identical starting points and unbiased exchange suffice to destroy equality.
 
 % ===========================================================================
 \section{Conceptual framework}
@@ -104,31 +104,33 @@ Section~\ref{sec:conclusion} concludes.
 
 \subsection{Agent-based economic simulation}
 
-An \textbf{agent-based economic simulation} is a computer model in which many autonomous ``agents'' (households, traders, firms) follow explicit rules for interaction.
-The macroscopic patterns---here, the wealth distribution---are \emph{generated} bottom-up from micro behavior rather than imposed by a representative agent or a closed-form equilibrium \citep{epstein2006, farmer2013}.
-This generative perspective is useful when the object of interest is the \emph{distribution itself} and how it evolves over time.
+An \textbf{agent-based economic simulation} is a computer model in which autonomous agents follow explicit interaction rules.
+Macroscopic patterns---here, the wealth distribution---are generated bottom-up rather than imposed \citep{epstein2006, farmer2013}.
 
-\subsection{Emergent inequality and wealth condensation}
+\subsection{Emergent inequality}
 
-\textbf{Emergent inequality} refers to dispersion in outcomes that arises from the dynamics of the system even when initial conditions are symmetric.
-In the simulations below, all agents begin with $w_i(0) = w_0$.
-Any subsequent variance in $\{w_i(t)\}$ is entirely endogenous.
+\textbf{Emergent inequality} means dispersion in outcomes that arises from system dynamics even when initial conditions are symmetric.
+All agents begin with $w_i(0) = w_0$.
+Any subsequent variance is endogenous.
+Crucially, emergent inequality in Act I does \textbf{not} require that richer agents win more often.
+Unbiased coin flips are enough.
 
-\textbf{Wealth condensation} is the extreme case in which, in the long run, a single agent (or a measure-zero set) holds a positive share of total wealth while most agents become impoverished \citep{bouchaud2000, ispolatov1998}.
-Physicists describe this as a symmetry-breaking phase transition in exchange models with multiplicative updates.
-Economists might speak of ``winner-take-all'' dynamics.
-Both languages point to the same phenomenon: multiplicative feedback can convert microscopic randomness into macroscopic concentration.
+\subsection{Wealth condensation}
 
-\subsection{The Matthew effect}
+\textbf{Wealth condensation} is the extreme limit in which a vanishing fraction of agents holds a positive share of total wealth \citep{bouchaud2000, ispolatov1998}.
+In our simulations, yard-sale and saving-propensity rules (still without rich-agent bias) approach this regime faster than pure random exchange.
+Condensation is driven by the \emph{structure} of the bet (multiplicative or min-stake updates), not by naming one agent as inherently superior.
 
-Merton's \emph{Matthew effect} names the social process by which ``the rich get richer'' in reputation, citations, or resources \citep{merton1968}.
-Operationally, cumulative advantage requires that current stock $w_i(t)$ raise the expected increment $\mathbb{E}[\Delta w_i \mid w_i(t)]$.
-Our fourth model implements the minimal bias consistent with that idea: when two agents meet, wealth flows toward the richer party with probability $p > \tfrac{1}{2}$.
-No other heterogeneity is introduced.
+\subsection{The Matthew effect (extension)}
+
+Merton's \emph{Matthew effect} describes cumulative advantage: current stock raises the expected future increment \citep{merton1968, price1976}.
+We implement this only in Model~4, where wealth flows to the richer agent with probability $p > \tfrac{1}{2}$.
+When $p = \tfrac{1}{2}$, Model~4 collapses to unbiased exchange.
+The Matthew effect is therefore an \emph{optional amplifier}, tested comparatively after the unbiased baseline is established.
 
 \begin{remark}[For the non-specialist reader]
-  The \textbf{Gini coefficient} is a single number summarizing how unequally wealth is shared, ranging from $0$ (everyone equal) to $1$ (one person holds everything).
-  The \textbf{Lorenz curve} plots the cumulative share of wealth held by the poorest $x\%$ of the population; the farther it bows below the 45-degree line of equality, the greater the inequality \citep{lorenz1905, gini1912}.
+  The \textbf{Gini coefficient} summarizes inequality from $0$ (everyone equal) to $1$ (one person holds everything).
+  The \textbf{Lorenz curve} plots cumulative wealth against cumulative population; the farther it falls below the diagonal, the greater the inequality \citep{lorenz1905, gini1912}.
 \end{remark}
 
 % ===========================================================================
@@ -138,101 +140,83 @@ No other heterogeneity is introduced.
 
 \subsection{Environment}
 
-Consider a closed economy with a finite set of agents $\mathcal{N} = \{1,\ldots,N\}$.
-Time is discrete, $t = 0,1,2,\ldots$.
-Each agent $i$ holds wealth $w_i(t) \geq 0$.
+Consider $N$ agents $\mathcal{N} = \{1,\ldots,N\}$ in a closed economy.
+Each holds wealth $w_i(t) \geq 0$.
 Initial endowments are identical:
 \begin{equation}
   w_i(0) = w_0 \qquad \forall i \in \mathcal{N}.
   \label{eq:init}
 \end{equation}
-Wealth is conserved at every step:
+Wealth is conserved:
 \begin{equation}
   \sum_{i=1}^{N} w_i(t) = N w_0 \qquad \forall t.
   \label{eq:conservation}
 \end{equation}
-Each period, a pair $(i,j)$ is drawn uniformly from $\mathcal{N} \times \mathcal{N}$ (with replacement) and an exchange rule updates $(w_i, w_j)$.
-
-This is a \emph{kinetic exchange model} of the kind surveyed by \citet{yakovenko2009} and \citet{lux2008}: agents behave like molecules colliding and transferring energy, except the traded quantity is money or wealth.
-The models are deliberately stripped down---no labor supply, no production, no banks---to isolate the effect of exchange rules on the distribution.
+Each step, a pair $(i,j)$ is drawn uniformly and an exchange rule updates their wealth.
+This is a \emph{kinetic exchange model} \citep{yakovenko2009, lux2008}: production, credit, and taxation are omitted to isolate exchange dynamics.
 
 \subsection{Inequality measures}
 
-Let $\mathbf{w} = (w_1,\ldots,w_N)$ denote the wealth vector with total $W = \sum_i w_i$.
-Sort wealth in ascending order: $w_{(1)} \leq \cdots \leq w_{(N)}$.
-
 \begin{definition}[Gini coefficient]
-  The Gini index is
+  Sort wealth $w_{(1)} \leq \cdots \leq w_{(N)}$. Then
   \begin{equation}
     G(\mathbf{w}) = \frac{2 \sum_{k=1}^{N} k\, w_{(k)}}{N \sum_{k=1}^{N} w_{(k)}} - \frac{N+1}{N}.
     \label{eq:gini}
   \end{equation}
-  If all $w_i$ are equal, $G=0$; if one agent holds all wealth, $G \to 1$ as $N \to \infty$.
 \end{definition}
 
-The \textbf{top $s\%$ wealth share} is the fraction of $W$ held by the richest $\lceil sN/100 \rceil$ agents.
-The Lorenz curve $L(x)$ gives the cumulative wealth share of the poorest fraction $x \in [0,1]$ of the population.
+We also report \textbf{top wealth shares} and \textbf{Lorenz curves}.
 
-\subsection{Exchange specifications}
-
-Each model is defined by one micro-step applied to a randomly selected pair.
+\subsection{Unbiased exchange specifications (Act I)}
 
 \paragraph{Model 1: Random exchange (Dragulescu--Yakovenko).}
-Fix a stake $\Delta > 0$.
-With equal probability, either $i$ pays $j$ or $j$ pays $i$, provided the payer's wealth exceeds $\Delta$:
+\label{model:dy}
+Fix stake $\Delta > 0$.
+With probability $\tfrac{1}{2}$, either $i$ pays $j$ or $j$ pays $i$ (subject to non-negativity):
 \begin{align}
-  w_i &\leftarrow w_i - \Delta, \quad w_j \leftarrow w_j + \Delta \quad \text{(with prob.\ $\tfrac{1}{2}$)}, \label{eq:dy}\\
-  w_i &\leftarrow w_i + \Delta, \quad w_j \leftarrow w_j - \Delta \quad \text{(with prob.\ $\tfrac{1}{2}$)}. \nonumber
+  w_i &\leftarrow w_i - \Delta, \quad w_j \leftarrow w_j + \Delta \quad \text{(prob.\ $\tfrac{1}{2}$)}, \label{eq:dy}\\
+  w_i &\leftarrow w_i + \Delta, \quad w_j \leftarrow w_j - \Delta \quad \text{(prob.\ $\tfrac{1}{2}$)}. \nonumber
 \end{align}
-This is a random walk of wealth shares with reflecting boundary at zero.
-\citet{dragulescu2000} show that, under continuous-time limits, the stationary distribution of money approaches an exponential (Boltzmann--Gibbs) form when $\Delta$ is small relative to mean wealth---yet finite-$N$ simulations still exhibit substantial dispersion (Figure~\ref{fig:gini}).
+No agent is more likely to win because they are richer.
+This is the \textbf{core} model: the minimal proof that bias is unnecessary.
+\citet{dragulescu2000} show that stationary distributions approach exponential form in continuous-time limits; finite simulations nonetheless depart from $G=0$ immediately.
 
 \paragraph{Model 2: Saving propensity (Chakraborti--Chakrabarti).}
-Each agent saves a fraction $\lambda \in [0,1)$ before random redistribution of the remainder.
-When $i$ and $j$ meet, let $\tilde{w}_k = \lambda w_k$ be saved wealth and exchange $(1-\lambda)(w_i + w_j)/2$ according to a fair coin flip \citep{chakraborti2000, chatterjee2007}:
+Agents save fraction $\lambda \in [0,1)$ and trade the remainder by fair coin flip \citep{chakraborti2000, chatterjee2007}:
 \begin{equation}
   w_i' = \lambda w_i + \epsilon_i, \qquad w_j' = \lambda w_j + \epsilon_j,
   \label{eq:chakraborti}
 \end{equation}
-where $(\epsilon_i, \epsilon_j)$ redistribute the transferable pool.
-For $\lambda > 0$, the distribution develops a Pareto-like tail; $\lambda = 0$ returns to Model~1.
-Figure~\ref{fig:saving} shows how terminal inequality rises with $\lambda$.
+where $(\epsilon_i,\epsilon_j)$ split the transferable pool $(1-\lambda)(w_i+w_j)/2$.
+There is still no bias toward the richer agent; inequality is amplified by the \emph{saving rule}.
 
 \paragraph{Model 3: Yard-sale exchange (Ispolatov--Krapivsky--Redner).}
-The loser pays a fraction $\beta \in (0,1)$ of the \emph{smaller} stake $\min(w_i, w_j)$ to the winner, who is chosen with probability $\tfrac{1}{2}$:
+The loser pays fraction $\beta$ of the \emph{minimum} stake; the winner is chosen with probability $\tfrac{1}{2}$:
 \begin{equation}
-  \Delta = \beta \min(w_i, w_j), \qquad
-  w_{\text{loser}} \leftarrow w_{\text{loser}} - \Delta, \quad
-  w_{\text{winner}} \leftarrow w_{\text{winner}} + \Delta.
+  \Delta = \beta \min(w_i, w_j).
   \label{eq:yardsale}
 \end{equation}
-Using the minimum stake ties the traded quantity to the poorer party's scale and generates stronger feedback toward concentration than proportional loss on the loser's wealth alone \citep{ispolatov1998, bouchaud2000}.
-Repeated meetings produce heavy-tailed outcomes and, in the long run, approximate wealth condensation.
+Again, no rich-agent bias---only a multiplicative/min-stake structure that strengthens concentration \citep{ispolatov1998, bouchaud2000}.
 
-\paragraph{Model 4: Matthew-effect exchange.}
-Fix bias $p \in (\tfrac{1}{2}, 1)$ and stake $\Delta > 0$.
-When pair $(i,j)$ meets, let $r$ be the richer and $p$ the poorer agent.
-With probability $p$, wealth flows from poor to rich; with probability $1-p$, it flows the other way:
+\subsection{Extension: Matthew-effect exchange (Act II)}
+
+\paragraph{Model 4: Biased exchange.}
+When pair $(i,j)$ meets, let $r$ be richer and $p$ poorer.
+With probability $p_{\text{bias}} \in (\tfrac{1}{2}, 1)$, wealth flows from poor to rich:
 \begin{equation}
-  \mathbb{P}\big(w_r \uparrow,\; w_p \downarrow \;\big|\; \text{meeting}\big) = p > \tfrac{1}{2}.
+  \mathbb{P}\big(w_r \uparrow,\; w_p \downarrow \;\big|\; \text{meeting}\big) = p_{\text{bias}}.
   \label{eq:matthew}
 \end{equation}
-This is the minimal operationalization of Merton's cumulative advantage in a pairwise economy.
-When $p = \tfrac{1}{2}$, the rule collapses to fair random exchange; when $p \to 1$, condensation accelerates (Figure~\ref{fig:heatmap}).
+At $p_{\text{bias}} = \tfrac{1}{2}$ this reduces to Model~1.
+At $p_{\text{bias}} = 0.55$, concentration exceeds the unbiased baseline (Figure~\ref{fig:amplification}).
 
 \begin{proposition}[Conservation]
-  Under Models 1--4, provided transfers are feasible (non-negative wealth), $\sum_i w_i(t)$ is invariant in $t$.
+  Under Models 1--4, $\sum_i w_i(t)$ is invariant whenever transfers are feasible.
 \end{proposition}
 
 \begin{proof}
-Each rule transfers a quantity $\Delta \geq 0$ or $\beta w_{\text{loser}} \geq 0$ from one agent to another without leakage.
+Each rule moves wealth between two agents without leakage.
 \end{proof}
-
-\begin{remark}[What the models omit]
-  Real economies contain production, heterogeneous human capital, credit constraints, taxation, and marriage of capital with political power \citep{piketty2014, benhabib2019}.
-  The ABMs here isolate exchange dynamics.
-  Matching their quantitative predictions to data requires embedding them in richer structures \citep{acemoglu2015}.
-\end{remark}
 
 % ===========================================================================
 \section{Computational experiment}
@@ -241,116 +225,138 @@ Each rule transfers a quantity $\Delta \geq 0$ or $\beta w_{\text{loser}} \geq 0
 
 \subsection{Implementation}
 
-We simulate $N = 1{,}000$ agents with $w_i(0) = 1$ for all $i$.
-Each model runs for $5 \times 10^5$ pairwise meetings unless otherwise noted.
-Parameters: $\Delta = 0.01$ (Models 1 and 4), $\lambda = 0.9$ (Model 2), $\beta = 0.1$ (Model 3), $p = 0.55$ (Model 4).
-Random seeds are fixed for reproducibility.
-Code is available in the project repository (\texttt{simulation/models.py}).
+We simulate $N = 1{,}000$ agents with $w_i(0) = 1$.
+Each run uses $5 \times 10^5$ pairwise meetings unless noted.
+Parameters: $\Delta = 0.01$ (Models 1 and 4), $\lambda = 0.9$ (Model 2), $\beta = 0.1$ (Model 3), $p_{\text{bias}} = 0.55$ (Model 4).
+Code: \texttt{simulation/models.py}; figures: \texttt{simulation/generate\_figures.py}.
 
-Table~\ref{tab:summary} reports terminal summary statistics from one run.
+% ---------------------------------------------------------------------------
+\subsection{Act I: Inequality without bias}
+\label{sec:act1}
+% ---------------------------------------------------------------------------
 
-\begin{table}[htbp]
-  \centering
-  \caption{Terminal inequality statistics ($N=1000$, $5\times 10^5$ steps)}
-  \label{tab:summary}
-  \begin{tabular}{lcccc}
-    \toprule
-    Model & Gini & Top 1\% share & Top 10\% share & Max / Median \\
-    \midrule
-    Random exchange (DY)       & 0.17 & 0.02 & 0.15 & 1.9 \\
-    Saving ($\lambda=0.9$)     & 0.67 & 0.16 & 0.52 & 68.7 \\
-    Yard-sale ($\beta=0.1$)    & 0.81 & 0.14 & 0.66 & 256.0 \\
-    Matthew effect ($p=0.55$)  & 0.41 & 0.03 & 0.22 & 2.8 \\
-    \bottomrule
-  \end{tabular}
-  \vspace{0.5em}
-  \begin{minipage}{\textwidth}
-    \small\textit{Note:} Values from the reference simulation (seed 42, $N=1000$, $5\times 10^5$ meetings). Yard-sale and saving-propensity models generate the strongest tail concentrations; random exchange produces modest dispersion despite identical starts.
-  \end{minipage}
-\end{table}
-
-\subsection{Results}
-
-\paragraph{Inequality rises even from equality.}
-Figure~\ref{fig:gini} plots the Gini coefficient at intervals of $5{,}000$ steps.
-All four models depart from $G=0$.
-The yard-sale specification converges fastest toward extreme concentration; random exchange rises more gradually but steadily.
+\paragraph{Monte Carlo ensemble (core evidence).}
+Figure~\ref{fig:ensemble} reports $1{,}000$ independent runs of Model~1 (unbiased DY).
+Every run begins with $G = 0$.
+Every run in our experiment ends with $G > 0$.
+The terminal Gini ranges from $0.165$ to $0.190$ (mean $0.178$, median $0.178$).
+The right panel shows four sample time paths: same rules, different random seeds, same qualitative departure from equality.
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.92\textwidth]{figures/fig_gini_evolution.pdf}
-  \caption{Evolution of the Gini coefficient under four exchange rules, starting from identical endowments ($w_i(0)=1$).}
-  \label{fig:gini}
+  \includegraphics[width=0.98\textwidth]{figures/fig_ensemble_unbiased.pdf}
+  \caption{\textbf{Core result.} Left: distribution of terminal Gini across $1{,}000$ unbiased random-exchange runs, each starting from perfect equality. Right: sample Gini paths under the same unbiased rule.}
+  \label{fig:ensemble}
 \end{figure}
 
-\paragraph{Distribution shapes differ qualitatively.}
-Figure~\ref{fig:dist} displays complementary cumulative distribution functions (CCDFs) on log-log axes.
-The yard-sale model exhibits a heavy tail consistent with condensation \citep{gabaix2009}.
-The saving-propensity model produces intermediate tail behavior predicted by \citet{chatterjee2007}.
-Fair random exchange yields a distribution closer to exponential, yet still far from equality.
-
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.95\textwidth]{figures/fig_wealth_distributions.pdf}
-  \caption{Terminal wealth distributions (CCDF) by model. Horizontal axes: agent wealth; vertical axes: fraction of agents with wealth exceeding $w$.}
-  \label{fig:dist}
-\end{figure}
-
-\paragraph{Lorenz curves.}
-Figure~\ref{fig:lorenz} compares cumulative wealth shares.
-The yard-sale curve hugs the upper-left corner: the poorest half of the population holds essentially no wealth in the terminal snapshot.
-The Lorenz ordering mirrors the Gini ranking in Table~\ref{tab:summary}.
-
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.65\textwidth]{figures/fig_lorenz.pdf}
-  \caption{Lorenz curves at $t = 5 \times 10^5$. The diagonal is perfect equality.}
-  \label{fig:lorenz}
-\end{figure}
-
-\paragraph{Matthew effect comparative statics.}
-Figure~\ref{fig:heatmap} varies the bias $p$ and stake $\Delta$ in Model~4.
-Inequality is increasing in both parameters near the symmetric benchmark $p=\tfrac{1}{2}$.
-Even a modest $5$ percentage-point bias ($p=0.55$) materially raises the Gini over $500{,}000$ interactions.
-
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.75\textwidth]{figures/fig_matthew_heatmap.pdf}
-  \caption{Terminal Gini in the Matthew-effect model as a function of transfer stake $\Delta$ and bias $p$ toward the richer agent.}
-  \label{fig:heatmap}
-\end{figure}
-
-\paragraph{Dynamics of top wealth shares.}
-Figure~\ref{fig:top} tracks the share held by the richest 1\%.
-Yard-sale dynamics seize wealth rapidly; Matthew-effect and random-exchange models concentrate more slowly but monotonically.
-
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.92\textwidth]{figures/fig_top_shares.pdf}
-  \caption{Top 1\% wealth share over time for selected models.}
-  \label{fig:top}
-\end{figure}
-
-\paragraph{From equality to skewness.}
-Figure~\ref{fig:hist} shows wealth histograms for the Matthew-effect model at three snapshots.
-The distribution morphs from a spike at $w=1$ into a right-skewed form without any change in fundamental agent characteristics---only the history of encounters differs across agents.
+\paragraph{Single-run dynamics.}
+Figure~\ref{fig:hist} shows wealth histograms for Model~1 at three time points: a spike at $w=1$ gives way to a spread distribution with no change in agent characteristics.
+Figure~\ref{fig:gini} plots Gini over time for all models; the unbiased DY curve (bold) rises monotonically from zero despite fair coins.
 
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.95\textwidth]{figures/fig_histogram_evolution.pdf}
-  \caption{Wealth histograms at three time points under Matthew-effect exchange ($p=0.55$).}
+  \caption{Wealth histograms under \emph{unbiased} random exchange at three time points.}
   \label{fig:hist}
 \end{figure}
 
-\paragraph{Role of saving.}
-Figure~\ref{fig:saving} sweeps $\lambda$ in Model~2.
-Higher saving propensity---holding more wealth fixed while trading the remainder---amplifies inequality, matching the analytical literature \citep{chakraborti2000, yakovenko2009}.
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.92\textwidth]{figures/fig_gini_evolution.pdf}
+  \caption{Gini evolution from identical starts. Unbiased DY (bold) requires no Matthew-style bias.}
+  \label{fig:gini}
+\end{figure}
+
+\paragraph{Stronger dispersion from exchange structure (still unbiased).}
+Table~\ref{tab:unbiased} summarizes terminal statistics for Models 1--3.
+Yard-sale and saving-propensity rules produce far higher Gini than fair fixed-stake exchange, yet none tilts encounters toward the already-wealthy.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Unbiased models: terminal inequality ($N=1000$, $5\times 10^5$ steps, seed 42)}
+  \label{tab:unbiased}
+  \begin{tabular}{lcccc}
+    \toprule
+    Model & Gini & Top 1\% & Top 10\% & Max / Median \\
+    \midrule
+    Random exchange (DY)       & 0.17 & 0.02 & 0.15 & 1.9 \\
+    Saving ($\lambda=0.9$)     & 0.67 & 0.16 & 0.52 & 68.7 \\
+    Yard-sale ($\beta=0.1$)    & 0.81 & 0.14 & 0.66 & 256.0 \\
+    \bottomrule
+  \end{tabular}
+  \vspace{0.4em}
+  \begin{minipage}{\textwidth}
+    \small\textit{Note:} All three use fair winner/loser selection or no rich-agent tilt. Inequality is emergent, not imposed.
+  \end{minipage}
+\end{table}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.95\textwidth]{figures/fig_wealth_distributions.pdf}
+  \caption{Terminal wealth distributions (CCDF). Top row: unbiased models.}
+  \label{fig:dist}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.65\textwidth]{figures/fig_lorenz.pdf}
+  \caption{Lorenz curves. Even unbiased DY bends away from the equality diagonal.}
+  \label{fig:lorenz}
+\end{figure}
 
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.72\textwidth]{figures/fig_saving_sweep.pdf}
-  \caption{Terminal Gini as a function of saving propensity $\lambda$ (Chakraborti model).}
+  \caption{Saving propensity $\lambda$ raises terminal Gini without introducing rich-agent bias.}
   \label{fig:saving}
+\end{figure}
+
+% ---------------------------------------------------------------------------
+\subsection{Act II: Matthew effect as amplification}
+\label{sec:act2}
+% ---------------------------------------------------------------------------
+
+\paragraph{Biased exchange accelerates concentration.}
+Model~4 does not establish that inequality exists---Act I already did---but asks how much faster it accumulates when encounters favor the richer party.
+Figure~\ref{fig:amplification} compares a single unbiased run to $p_{\text{bias}} = 0.55$.
+Figure~\ref{fig:ensemble_compare} contrasts the \emph{distribution} of terminal Gini across $500$ runs: Matthew bias shifts mass rightward.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.92\textwidth]{figures/fig_matthew_amplification.pdf}
+  \caption{Matthew effect ($p=0.55$) as amplification of the unbiased baseline.}
+  \label{fig:amplification}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.88\textwidth]{figures/fig_ensemble_compare.pdf}
+  \caption{Terminal Gini across $500$ runs: unbiased DY versus Matthew-effect exchange.}
+  \label{fig:ensemble_compare}
+\end{figure}
+
+\begin{table}[htbp]
+  \centering
+  \caption{Extension model: Matthew-effect exchange (seed 42)}
+  \label{tab:matthew}
+  \begin{tabular}{lcccc}
+    \toprule
+    Model & Gini & Top 1\% & Top 10\% & Max / Median \\
+    \midrule
+    Matthew effect ($p=0.55$) & 0.41 & 0.03 & 0.22 & 2.8 \\
+    \bottomrule
+  \end{tabular}
+  \vspace{0.4em}
+  \begin{minipage}{\textwidth}
+    \small\textit{Note:} Same initial conditions as Table~\ref{tab:unbiased}, but encounters favor the richer agent. Gini exceeds the unbiased DY single-run value ($0.17$) and the DY ensemble mean ($0.18$).
+  \end{minipage}
+\end{table}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.75\textwidth]{figures/fig_matthew_heatmap.pdf}
+  \caption{Comparative statics in the extension model: terminal Gini vs.\ bias $p$ and stake $\Delta$. At $p=\tfrac{1}{2}$ (dashed), the rule is unbiased.}
+  \label{fig:heatmap}
 \end{figure}
 
 % ===========================================================================
@@ -360,46 +366,35 @@ Higher saving propensity---holding more wealth fixed while trading the remainder
 
 \subsection{Mechanism and intuition}
 
-Three mechanisms recur across specifications.
+Three mechanisms operate, in order of generality.
 
-First, \textbf{random walks with bounds}: when wealth can only be lost up to current holdings, agents near zero struggle to recover large losses.
-Symmetric coin flips nonetheless produce dispersion because variance accumulates over time---an observation familiar from statistical mechanics \citep{dragulescu2000}.
+\textbf{First, unbiased random walks.}
+Fixed-stake exchange with fair coins is a random walk of wealth with a reflecting boundary at zero.
+Variance accumulates even when expected transfers are symmetric \citep{dragulescu2000}.
+The $1{,}000$-run ensemble makes the point concretely: every unbiased trajectory leaves perfect equality.
 
-Second, \textbf{multiplicative updates}: proportional losses (yard-sale) make poor agents disproportionately vulnerable.
-This is the mathematical core of wealth condensation \citep{bouchaud2000}.
+\textbf{Second, multiplicative or min-stake structure.}
+Yard-sale and saving rules strengthen tails without rich-agent bias.
+The \emph{rules of the bet}, not agent heterogeneity, drive condensation \citep{bouchaud2000}.
 
-Third, \textbf{biased accumulation}: even weak preferential flow ($p$ slightly above one half) tilts the long-run distribution toward concentration, echoing Merton's and Price's cumulative-advantage processes \citep{merton1968, price1976}.
+\textbf{Third, Matthew-style amplification (extension only).}
+A small tilt $p > \tfrac{1}{2}$ accelerates divergence \citep{merton1968, price1976}.
+This is cumulative advantage layered on top of the unbiased baseline, not the root cause of dispersion.
 
-For a lay reader: imagine a classroom where every student starts with \$10 and pairs up each day to flip a coin for \$1.
-After many weeks, some students will hold far more than \$10 and others far less, even though the coin is fair---pure luck, accumulated.
-If the coin is slightly rigged so the richer student wins more often, divergence accelerates.
-That is the Matthew effect in miniature.
+For a lay reader: imagine a class where every student starts with \$10 and flips a fair coin each day for \$1.
+After many weeks, balances spread apart even though the coin is fair.
+That is Act I.
+If the coin slightly favors whoever already has more, divergence speeds up.
+That is Act II.
 
-\subsection{Relation to empirical inequality}
+\subsection{Relation to empirical inequality and limitations}
 
-Real-world Gini coefficients for wealth commonly exceed $0.7$ in high-income countries; our minimalist exchange models can reach similar local values only in condensation regimes (yard-sale) or after extreme time horizons.
-Production economies differ along dimensions these models omit: skill-biased technical change, bequests, assortative matching, and policy \citep{piketty2014, benhabib2019, galor2000}.
-The ABM contribution is not to ``fit'' a country snapshot, but to prove existence: \emph{interaction alone} can generate inequality from equality.
+Real wealth inequality reflects production, bequests, policy, and heterogeneous returns \citep{piketty2014, benhabib2019, galor2000}.
+Our models isolate exchange to prove \emph{existence}: unbiased interaction alone can generate inequality from equality.
+The Matthew effect explains \emph{acceleration}, not the bare fact of dispersion.
 
-Agent-based modeling complements reduced-form econometrics here \citep{farmer2013}.
-Regression coefficients on initial conditions identify correlates in data; ABMs display possible \emph{dynamic paths} consistent with symmetric fundamentals.
-Neither replaces the other.
-
-\subsection{Limitations and identification}
-
-We stress three cautions aligned with quantitative best practice.
-
-\begin{enumerate}
-  \item \textbf{Stylized mechanisms, not causal claims about real policy.}
-    Raising $p$ in simulation raises Gini; that comparative static is \emph{internally valid} in the model.
-    Claiming that a specific real-world institution maps to $p=0.55$ would require separate identification.
-
-  \item \textbf{Finite-$N$ and stopping time.}
-    Yard-sale condensation is asymptotic; finite runs approximate but do not fully reach the degenerate state.
-
-  \item \textbf{Conservation vs.\ growth.}
-    Closed-exchange models conserve total wealth; growing economies with capital accumulation require extensions \citep{benhabib2011}.
-\end{enumerate}
+We caution that simulation comparative statics are internally valid but do not identify real-world institutions.
+Finite $N$ and stopping times matter; closed-exchange models omit growth \citep{benhabib2011, acemoglu2015}.
 
 % ===========================================================================
 \section{Conclusion}
@@ -407,12 +402,14 @@ We stress three cautions aligned with quantitative best practice.
 % ===========================================================================
 
 Identical starting points do not guarantee identical outcomes.
-In agent-based wealth-exchange models with conserved aggregate resources, stochastic pairwise interaction generates inequality endogenously.
-The Matthew effect---a slight bias favoring those who already have more---accelerates concentration, but even fair random exchange suffices to destroy perfect equality over time.
+In agent-based wealth-exchange models with conserved aggregate resources, \emph{unbiased} stochastic interaction generates inequality endogenously.
+We demonstrate this with $1{,}000$ independent runs of fair random exchange, each beginning at Gini zero and ending with strictly positive dispersion.
 
-The epigraph from Matthew captures a mechanism, not a moral theorem.
-Formalizing that mechanism in transparent ABMs clarifies which features of inequality require initial heterogeneity and which arise from the geometry of luck compounded through social and economic encounter \citep{merton1968, yakovenko2009, ball2004}.
-Future work might embed exchange kernels in networks \citep{dieter2021}, calibrate $\lambda$ and $\beta$ to micro transaction data, or couple agents to production and fiscal policy in the tradition of \citet{benhabib2011} and \citet{piketty2014}.
+The Matthew effect---biasing encounters toward those who already have more---is a meaningful extension that accelerates concentration.
+It is not, however, the core explanation for why equality unravels.
+The epigraph from Matthew names the amplification mechanism; the primary result is that equality is fragile even without it.
+
+Future work might study ensemble distributions under yard-sale rules, embed agents in networks \citep{dieter2021}, or couple exchange to production and fiscal policy \citep{benhabib2011, piketty2014}.
 
 % ===========================================================================
 \bibliographystyle{apalike}

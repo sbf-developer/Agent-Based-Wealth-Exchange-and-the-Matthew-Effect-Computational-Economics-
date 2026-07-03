@@ -1,73 +1,40 @@
-# Emergent Inequality and the Matthew Effect
+# Emergent Inequality from Equal Starts
 
-An agent-based computational economics project: PhD-level working paper (LaTeX), Python wealth-exchange simulations, and publication figures.
+Agent-based computational economics: LaTeX paper, Python simulations, and figures.
 
-## What this is
-
-When agents start with **identical wealth** and interact through random pairwise exchange, **inequality emerges endogenously**. This is sometimes called:
-
-- **Agent-based wealth distribution model**
-- **Emergent inequality** / **wealth condensation**
-- The **Matthew effect** (cumulative advantage: "to those who have, more will be given")
-
-## Project structure
-
-```
-Matthew Effect/
-├── paper/
-│   ├── main.tex           # LaTeX paper (opens with Matthew 25:29)
-│   ├── references.bib     # Academic references
-│   └── figures/           # Generated PDF/PNG figures
-├── simulation/
-│   ├── models.py          # Four exchange models + metrics
-│   ├── generate_figures.py  # Build all paper figures
-│   └── run_simulation.py  # CLI for single runs
-└── requirements.txt
-```
+**Core claim:** inequality emerges from **unbiased** random wealth exchange when all agents start equal. The Matthew effect (bias toward the richer agent) is an **extension** that accelerates concentration—it is not required for inequality to appear.
 
 ## Quick start
 
 ```powershell
 pip install -r requirements.txt
 python simulation/generate_figures.py
-python simulation/run_simulation.py --model matthew
+python simulation/run_simulation.py --model dy
+python simulation/run_simulation.py --model dy --ensemble 1000
 ```
 
-## Compile the paper
+## Models
 
-Requires a LaTeX distribution (TeX Live, MiKTeX):
+| Act | Model | Bias toward rich? | Role |
+|-----|-------|-------------------|------|
+| I | Random exchange (DY) | No | **Core** — minimal proof |
+| I | Saving propensity | No | Stronger tails, still unbiased |
+| I | Yard-sale | No | Min-stake structure, still unbiased |
+| II | Matthew effect | Yes ($p > 1/2$) | **Extension** — amplification |
+
+## Key figure
+
+`fig_ensemble_unbiased` — 1,000 independent unbiased runs, all starting at Gini = 0, all ending with Gini > 0.
+
+## Compile paper
 
 ```powershell
 cd paper
-pdflatex main.tex
-bibtex main
-pdflatex main.tex
-pdflatex main.tex
+pdflatex main.tex; bibtex main; pdflatex main.tex; pdflatex main.tex
 ```
 
 Output: `paper/main.pdf`
 
-## Models implemented
+## Repository
 
-| Model | Reference | Mechanism |
-|-------|-----------|-----------|
-| Random exchange (DY) | Dragulescu & Yakovenko (2000) | Fixed stake, fair coin flip |
-| Saving propensity | Chakraborti & Chakrabarti (2000) | Agents save fraction λ before trading |
-| Yard-sale | Ispolatov et al. (1998) | Loser pays fraction of own wealth |
-| Matthew effect | Merton (1968) | Transfers biased toward richer agent |
-
-All models conserve total wealth. Initial conditions: \(w_i(0) = 1\) for all agents.
-
-## Figures
-
-1. Gini evolution over time (all models)
-2. Wealth distribution CCDFs (log-log)
-3. Lorenz curves
-4. Matthew-effect heatmap (Gini vs bias and stake)
-5. Top 1% wealth share dynamics
-6. Histogram evolution (equality → concentration)
-7. Saving propensity comparative statics
-
-## Citation
-
-If you use this code, please cite the underlying literature (Merton 1968; Dragulescu & Yakovenko 2000; Ispolatov et al. 1998; Yakovenko & Rosser 2009).
+[Agent-Based-Wealth-Exchange-and-the-Matthew-Effect-Computational-Economics-](https://github.com/sbf-developer/Agent-Based-Wealth-Exchange-and-the-Matthew-Effect-Computational-Economics-)
